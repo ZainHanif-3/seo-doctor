@@ -1,0 +1,39 @@
+﻿<!doctype html>
+<html lang="en">
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>SEO News</title>
+  <meta name="description" content="Get in touch with the demo team for questions about SEO audits, repairs, crawl budgets and technical site fixes.">
+  <link rel="stylesheet" href="/demo/styles.css">
+  <script type="application/ld+json">
+  { "name": "Demo News", "url": "/news.html"
+  </script>
+</head>
+<body>
+  <header class="site-header">
+    <nav>
+      <a href="/demo">Home</a>
+      <a href="/demo/about.html">About</a>
+      <a href="/demo/products.html">Products</a>
+      <a href="/demo/contact.html">Contact</a>
+      <a href="/demo/news.html">News</a>
+    </nav>
+  </header>
+
+  <main>
+    <h1>Latest SEO news</h1>
+
+    <p>The news page carries three separate title problems and one structured data problem, which makes it the most instructive document in the fixture. Its title is only eight characters long, far below the thirty character floor where results pages start truncating unpredictably, and its meta description is an exact copy of the description on the contact page, so the duplicate description detector groups those two URLs together. The page also declares no charset, and it ships a JSON-LD block that is syntactically broken: the object is missing a closing brace and a quoted value, so any parser will reject it and the structured data audit will report the parse error with the exact message from the JSON parser.</p>
+
+    <p>Structured data is the language search engines use to understand entities rather than strings. When the block parses cleanly and declares an @context of schema.org, a crawler can map your properties onto their knowledge graph, which unlocks breadcrumbs, sitelinks search boxes, carousels and other enhancements that push a result above the plain blue link. When the block does not parse, the enhancement is silently dropped and you never learn why unless you monitor your search console. The audit therefore validates every JSON-LD block it finds: it must parse as JSON, and it must declare a context, otherwise it is reported as invalid with the parser message attached as evidence.</p>
+
+    <p>Repairing invalid structured data automatically is risky, so this issue stays on the manual recommendation list with a precise instruction: fix the syntax, add the context, and re-run the crawl. Everything else on this page can be repaired safely: the title is rebuilt from the heading one plus the site name, the duplicate description is rewritten from the first paragraph of this document, the missing charset is inserted as the first child of the head element, and the full set of social preview tags is generated so a shared link renders with a rich card instead of a bare URL.</p>
+
+    <p>Between these two paragraphs the fixture demonstrates why an SEO tool must separate safe mechanical repairs from editorial judgement. The tool can guarantee valid syntax; it cannot guarantee that your wording is the wording your customers need. That boundary is enforced in the code, not just described in the interface, and it is the reason the optimize step reports fixed and skipped results separately for every single issue it touches.</p>
+  </main>
+
+  <footer>
+    <p>SEO Doctor fixture site â€” built by the ZN DEVELOPER team.</p>
+  </footer>
+</body>
+</html>

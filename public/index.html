@@ -1,0 +1,249 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#06070B">
+  <meta name="description" content="SEO Doctor — paste a URL, crawl and score the whole site, then repair every fixable SEO issue in one click. Built by ZN DEVELOPER.">
+  <title>SEO Doctor — crawl · score · repair | ZN DEVELOPER</title>
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <div class="grid-bg" aria-hidden="true"></div>
+
+  <header class="topbar">
+    <a class="brand" href="/">
+      <span class="brand-mark" aria-hidden="true">⬡</span>
+      <span class="brand-name">SEO<span class="accent">//</span>DOCTOR</span>
+    </a>
+    <nav class="topnav" aria-label="Sections">
+      <a href="#scanner">Scan</a>
+      <a href="#report">Report</a>
+      <a href="#repair">Repair</a>
+      <a href="#footer">Team</a>
+    </nav>
+    <span class="badge badge-lime">v1.0 · ZN LAB</span>
+  </header>
+
+  <main>
+    <!-- HERO -->
+    <section class="hero" id="scanner">
+      <div class="hero-copy">
+        <p class="eyebrow">ZN DEVELOPER · TECHNICAL SEO LAB</p>
+        <h1>Crawl. Score.<br><span class="grad">Repair.</span></h1>
+        <p class="lede">Paste any URL. SEO Doctor crawls the site (depth ≤ 3, 30 pages, 10&nbsp;s budget), audits 45+ ranking signals, prints a scored issue table — then rewrites every fixable file for you.</p>
+
+        <form id="scan-form" class="scan-form" novalidate>
+          <div class="field-row">
+            <label class="field grow" for="url-input">
+              <span class="field-label">Target URL</span>
+              <input id="url-input" name="url" type="text" inputmode="url" spellcheck="false"
+                     placeholder="example.com or http://localhost:3200/demo" autocomplete="off" required
+                     aria-describedby="url-hint">
+            </label>
+            <button class="btn btn-primary" id="analyze-btn" type="submit">
+              <span class="btn-dot" aria-hidden="true"></span> Analyze
+            </button>
+          </div>
+          <p class="hint" id="url-hint">Protocol is added automatically · same-host crawl · <code>robots.txt</code> respected but still audited.</p>
+
+          <details class="advanced">
+            <summary>Advanced: site name &amp; language</summary>
+            <div class="field-row">
+              <label class="field" for="site-name-input">
+                <span class="field-label">Site name (used in generated titles)</span>
+                <input id="site-name-input" type="text" placeholder="auto from domain" maxlength="60" autocomplete="off">
+              </label>
+              <label class="field field-sm" for="lang-input">
+                <span class="field-label">Lang</span>
+                <input id="lang-input" type="text" value="en" maxlength="10" autocomplete="off">
+              </label>
+            </div>
+          </details>
+        </form>
+
+        <div class="progress" id="progress" hidden>
+          <div class="progress-head">
+            <span class="progress-stage" id="progress-stage" aria-live="polite">Starting…</span>
+            <span class="progress-pct" id="progress-pct">0%</span>
+          </div>
+          <div class="progress-track"><div class="progress-bar" id="progress-bar"></div></div>
+        </div>
+
+        <p class="alert" id="error-box" role="alert" hidden></p>
+      </div>
+
+      <div class="hero-visual" aria-hidden="true">
+        <div class="browser">
+          <div class="browser-bar">
+            <span class="dot red"></span><span class="dot amber"></span><span class="dot lime"></span>
+            <span class="browser-url">https://target.site/</span>
+          </div>
+          <div class="browser-body">
+            <div class="scanline"></div>
+            <div class="wire w1"></div><div class="wire w2"></div><div class="wire w3"></div>
+            <div class="wire w4"></div><div class="wire w5"></div>
+            <div class="chip-row">
+              <span class="wire-chip cyan">title</span>
+              <span class="wire-chip lime">h1</span>
+              <span class="wire-chip amber">canonical</span>
+              <span class="wire-chip cyan">og:*</span>
+              <span class="wire-chip lime">json-ld</span>
+            </div>
+            <div class="wire w6"></div><div class="wire w7"></div>
+          </div>
+        </div>
+        <div class="float-tag tag-1">robots.txt → 404</div>
+        <div class="float-tag tag-2">missing canonical ×5</div>
+        <div class="float-tag tag-3">score 68 <b>/100</b></div>
+      </div>
+    </section>
+
+    <!-- REPORT -->
+    <section class="panel" id="report" hidden>
+      <div class="panel-head">
+        <h2><span class="idx">01</span> Score</h2>
+        <span class="meta-line" id="report-meta"></span>
+      </div>
+
+      <div class="score-row">
+        <div class="gauge-wrap">
+          <svg class="gauge" viewBox="0 0 200 200" role="img" aria-labelledby="gauge-label">
+            <title id="gauge-label">SEO score</title>
+            <circle class="gauge-ring" cx="100" cy="100" r="84"></circle>
+            <circle class="gauge-arc" id="gauge-arc" cx="100" cy="100" r="84"></circle>
+          </svg>
+          <div class="gauge-value"><span id="score-num">0</span><small>/100</small></div>
+        </div>
+
+        <div class="score-side">
+          <div class="chips" id="severity-chips">
+            <span class="chip chip-critical">critical <b id="c-critical">0</b></span>
+            <span class="chip chip-high">high <b id="c-high">0</b></span>
+            <span class="chip chip-medium">medium <b id="c-medium">0</b></span>
+            <span class="chip chip-low">low <b id="c-low">0</b></span>
+          </div>
+          <ul class="score-facts" id="score-facts"></ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- ISSUES -->
+    <section class="panel" id="issues-panel" hidden>
+      <div class="panel-head">
+        <h2><span class="idx">02</span> Issues</h2>
+        <div class="toolbar">
+          <label class="check">
+            <input type="checkbox" id="select-all"> <span>Select all repairable</span>
+          </label>
+        </div>
+      </div>
+
+      <div class="issue-groups" id="issue-groups"></div>
+    </section>
+
+    <!-- REPAIR -->
+    <section class="panel" id="repair" hidden>
+      <div class="panel-head">
+        <h2><span class="idx">03</span> Repair</h2>
+        <span class="meta-line">server-side rewrite · diff report · zip export</span>
+      </div>
+
+      <div class="mode-grid">
+        <label class="mode-card active" id="mode-mirror-card">
+          <input type="radio" name="mode" value="mirror" checked>
+          <span class="mode-name">Mirror mode <em>default · safe</em></span>
+          <span class="mode-desc">Downloads the crawled HTML/CSS/assets into <code>sites/&lt;host&gt;/</code>, repairs the local copy and hands you a <b>.zip</b> + HTML diff report. <b>Never touches the live site. Zero credentials.</b></span>
+        </label>
+        <label class="mode-card" id="mode-live-card">
+          <input type="radio" name="mode" value="live">
+          <span class="mode-name">Live mode <em>FTP/SFTP upload</em></span>
+          <span class="mode-desc">Uploads <b>only the files it changed</b> to your server. Requires explicit confirmation + permission checkbox. Credentials are used in memory for this run only — never stored, never logged.</span>
+        </label>
+      </div>
+
+      <details class="live-panel" id="live-panel">
+        <summary>Live mode credentials (FTP/SFTP)</summary>
+        <p class="warn"><b>Only edit sites you own or have written permission to modify.</b></p>
+        <div class="field-row">
+          <label class="field" for="ftp-host"><span class="field-label">FTP host</span>
+            <input id="ftp-host" type="text" placeholder="ftp.example.com" autocomplete="off"></label>
+          <label class="field field-sm" for="ftp-port"><span class="field-label">Port</span>
+            <input id="ftp-port" type="text" placeholder="21" autocomplete="off"></label>
+          <label class="field" for="ftp-user"><span class="field-label">User</span>
+            <input id="ftp-user" type="text" placeholder="user" autocomplete="off"></label>
+          <label class="field" for="ftp-pass"><span class="field-label">Password</span>
+            <input id="ftp-pass" type="password" placeholder="••••••••" autocomplete="new-password"></label>
+          <label class="field" for="ftp-path"><span class="field-label">Remote path</span>
+            <input id="ftp-path" type="text" placeholder="/public_html (optional)" autocomplete="off"></label>
+        </div>
+        <label class="check perm">
+          <input type="checkbox" id="permission-check">
+          <span>I have permission to edit this site</span>
+        </label>
+      </details>
+
+      <div class="optimize-row">
+        <button class="btn btn-go" id="optimize-btn" type="button">
+          ⚡ Optimize all <span id="optimize-count"></span>
+        </button>
+        <p class="hint">Repairs selected issues (or every repairable issue if none are selected) and returns fixed/skipped results with a full before/after diff.</p>
+      </div>
+    </section>
+
+    <!-- RESULTS -->
+    <section class="panel" id="results" hidden>
+      <div class="panel-head">
+        <h2><span class="idx">04</span> Repair results</h2>
+        <div class="toolbar">
+          <a class="btn btn-outline" id="download-btn" href="#" hidden>⬇ Download repaired site (.zip)</a>
+        </div>
+      </div>
+
+      <div class="result-stats" id="result-stats"></div>
+      <p class="alert alert-warn" id="optimize-error" role="alert" hidden></p>
+
+      <div class="diffs" id="diffs"></div>
+
+      <details class="manual-box" id="manual-box" hidden>
+        <summary>Manual recommendations <span id="manual-count"></span></summary>
+        <ul id="manual-list"></ul>
+      </details>
+    </section>
+  </main>
+
+  <footer class="footer" id="footer">
+    <div class="footer-grid">
+      <div>
+        <p class="footer-brand">SEO<span class="accent">//</span>DOCTOR</p>
+        <p class="footer-line">Built by the <b>ZN DEVELOPER</b> team — CEO <b>Zain Hanif</b>.</p>
+        <p class="footer-line muted">We build websites, web/mobile apps, APIs, automations &amp; SEO — DM to start your project.</p>
+        <ul class="roster">
+          <li>Full-stack</li><li>Backend</li><li>Trading Bots</li>
+          <li>SEO</li><li>Data / Science</li><li>QA Supervisors</li>
+        </ul>
+      </div>
+      <div>
+        <p class="footer-title">Find us</p>
+        <ul class="footer-links">
+          <li><a href="https://github.com/ZainHanif-3" target="_blank" rel="noopener">github.com/ZainHanif-3</a></li>
+          <li><a href="https://www.linkedin.com/in/zain-hanif-5a716583/" target="_blank" rel="noopener">linkedin.com/in/zain-hanif-5a716583</a></li>
+          <li><a href="https://www.facebook.com/zndeveloper" target="_blank" rel="noopener">facebook.com/zndeveloper</a></li>
+        </ul>
+      </div>
+      <div>
+        <p class="footer-title">Try the offline demo</p>
+        <p class="footer-line muted">A deliberately broken 5-page site ships with the app:</p>
+        <code class="demo-cmd">POST /api/analyze {"url":"http://localhost:3000/demo"}</code>
+      </div>
+    </div>
+    <p class="copyright">© 2026 ZN DEVELOPER — Zain Hanif. All rights reserved.</p>
+  </footer>
+
+  <script src="/js/app.js"></script>
+</body>
+</html>

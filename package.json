@@ -1,0 +1,22 @@
+{
+  "name": "seo-doctor",
+  "version": "1.0.0",
+  "description": "SEO Doctor - site crawl, scored SEO audit and one-click auto-repair (mirror + live modes). Built by ZN DEVELOPER.",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js",
+    "test": "node --test"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "license": "MIT",
+  "dependencies": {
+    "archiver": "^7.0.1",
+    "basic-ftp": "^6.2.3",
+    "cheerio": "^1.0.0",
+    "express": "^4.21.2",
+    "image-size": "^1.1.1"
+  }
+}

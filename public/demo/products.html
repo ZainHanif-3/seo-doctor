@@ -1,0 +1,42 @@
+﻿<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="/demo/styles.css">
+</head>
+<body>
+  <header class="site-header">
+    <nav>
+      <a href="/demo">Home</a>
+      <a href="/demo/about.html">About</a>
+      <a href="/demo/products.html">Products</a>
+      <a href="/demo/contact.html">Contact</a>
+      <a href="/demo/news.html">News</a>
+    </nav>
+  </header>
+
+  <main>
+    <h1>Product showcase for the demo</h1>
+    <h3>What ships in the box</h3>
+
+    <img src="/demo/img/chart.png">
+
+    <p>The product catalogue on this page exists to exercise several rules at once. It has no title tag whatsoever, which is the single most damaging on-page omission because the title is the first thing a results page renders. It also jumps straight from a level one heading to a level three heading, breaking the document outline, and both images on the page ship without alternative text and without explicit width and height attributes. Missing dimensions are the classic cause of cumulative layout shift: the browser reserves no space, the image pops in later, and the whole layout jumps under the reader's cursor while Google is measuring responsiveness.</p>
+
+    <h3>How pricing works</h3>
+
+    <img src="/demo/img/hero.png">
+
+    <p>Pricing for a fixture product is intentionally simple. There is one plan, it includes everything, and there is no checkout because the point of this page is markup, not commerce. What matters for search is that a real product page would carry an offer, a price, availability, and a set of reviews marked up with schema.org product data so it can surface as a rich result with stars. This page carries none of that, and the site-wide check reports that no page publishes valid JSON-LD at all. The repair pipeline can inject a website and organization block, but genuine product markup needs your real prices, your real stock state and your real review counts, which is exactly the kind of work that stays on the manual recommendation list.</p>
+
+    <p>Below the fold, the second image loads eagerly even though a visitor cannot see it until they scroll. That is wasted bandwidth on a mobile connection and the audit flags it as a missing lazy loading attribute. Fixing it is a one line change per image, so the optimizer applies loading="lazy" and decoding="async" to every non-hero image automatically while leaving the first, visible image alone to protect the largest contentful paint measurement.</p>
+
+    <p>Use this page as a reminder that technical SEO is mostly bookkeeping: correct titles, correct headings, correct attributes, correct directives, and honest structured data. The bookkeeping is tedious for humans and trivial for a well built crawler, which is precisely why this tool exists.</p>
+  </main>
+
+  <footer>
+    <p>SEO Doctor fixture site â€” built by the ZN DEVELOPER team.</p>
+  </footer>
+</body>
+</html>
