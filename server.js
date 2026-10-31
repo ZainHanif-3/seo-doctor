@@ -34,7 +34,8 @@ function slimCrawl(crawl) {
     origin: crawl.origin,
     host: crawl.host,
     startUrl: crawl.startUrl,
-    robots: { status: crawl.robots.status, exists: crawl.robots.exists, text: crawl.robots.text || '' },
+    robots: { status: crawl.robots.status, exists: crawl.robots.exists, text: crawl.robots.text || '', parsed: crawl.robots.parsed || null },
+    llms: { status: crawl.llms ? crawl.llms.status : 0, exists: !!(crawl.llms && crawl.llms.exists), text: (crawl.llms && crawl.llms.text) || '' },
     favicon: crawl.favicon,
     canary: { status: crawl.canary.status, body: String(crawl.canary.body || '').slice(0, 4000) },
     sitemap: { status: crawl.sitemap.status, exists: crawl.sitemap.exists },
@@ -83,7 +84,12 @@ app.post('/api/analyze', async (req, res) => {
       lang,
       createdAt: new Date().toISOString(),
       durationMs: Date.now() - t0,
-      score: audit.score,
+      score: audit.seoScore,
+      seoScore: audit.seoScore,
+      geoScore: audit.geoScore,
+      overall: audit.overall,
+      scores: audit.scores,
+      projection: audit.projection,
       counts: audit.counts,
       weighted: audit.weighted,
       contentPages: audit.contentPages,
@@ -99,6 +105,11 @@ app.post('/api/analyze', async (req, res) => {
       id: report.id,
       url: report.url,
       score: report.score,
+      seoScore: report.seoScore,
+      geoScore: report.geoScore,
+      overall: report.overall,
+      scores: report.scores,
+      projection: report.projection,
       pages: crawl.pages.length,
       counts: report.counts,
       issues: report.issues,
@@ -141,7 +152,9 @@ async function handleOptimize(req, res, forceLive) {
       permission: body.permission === true,
       creds: body.creds || null,
       siteName: body.siteName ? String(body.siteName).trim().slice(0, 60) : undefined,
-      lang: body.lang ? String(body.lang).trim().slice(0, 10) : undefined
+      lang: body.lang ? String(body.lang).trim().slice(0, 10) : undefined,
+      maxIterations: body.maxIterations ? Number(body.maxIterations) : undefined,
+      target: body.target ? Number(body.target) : undefined
     });
     res.json({
       mode: result.mode,
@@ -154,6 +167,11 @@ async function handleOptimize(req, res, forceLive) {
       diffReport: result.diffReport,
       uploaded: result.uploaded || null,
       stats: result.stats,
+      iterations: result.iterations,
+      scores: result.scores,
+      reachedTarget: result.reachedTarget,
+      target: result.target,
+      remainingAutoFixable: result.remainingAutoFixable,
       durationMs: result.durationMs
     });
   } catch (e) {
@@ -165,6 +183,15 @@ async function handleOptimize(req, res, forceLive) {
 
 app.post('/api/optimize', (req, res) => handleOptimize(req, res, false));
 app.post('/api/optimize/live', (req, res) => handleOptimize(req, res, true));
+
+// Iterate: audit → repair → re-audit until the target score or the cap.
+app.post('/api/improve', async (req, res) => {
+  const body = req.body || {};
+  const maxIterations = Math.max(1, Math.min(10, Number(body.maxIterations) || 4));
+  const target = Math.max(1, Math.min(100, Number(body.target) || 90));
+  req.body = { ...body, maxIterations, target };
+  return handleOptimize(req, res, false);
+});
 
 app.get('/api/download/:id', (req, res) => {
   const report = store.get(req.params.id);

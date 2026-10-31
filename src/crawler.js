@@ -132,11 +132,12 @@ async function crawlSite(startUrl, opts = {}) {
   const host = new URL(startUrl).hostname;
   const key = siteKey(host);
 
-  const [robotsProbeRes, faviconRes, sitemapRes, canaryRes] = await Promise.all([
+  const [robotsProbeRes, faviconRes, sitemapRes, canaryRes, llmsRes] = await Promise.all([
     probe(origin, '/robots.txt'),
     probe(origin, '/favicon.ico'),
     probe(origin, '/sitemap.xml'),
-    probe(origin, '/seo-doctor-canary-' + Math.random().toString(36).replace(/[0-9]/g, 'abcdefghijkmnpqrstuvwxyz').slice(2, 10))
+    probe(origin, '/seo-doctor-canary-' + Math.random().toString(36).replace(/[0-9]/g, 'abcdefghijkmnpqrstuvwxyz').slice(2, 10)),
+    probe(origin, '/llms.txt')
   ]);
 
   const robots = {
@@ -154,6 +155,13 @@ async function crawlSite(startUrl, opts = {}) {
   };
   const favicon = { status: faviconRes.status, ok: faviconRes.status >= 200 && faviconRes.status < 300 };
   const canary = { status: canaryRes.status, body: canaryRes.text || '' };
+
+  // llms.txt — the GEO convention for telling AI assistants what to cite.
+  const llms = {
+    status: llmsRes.status,
+    exists: llmsRes.status >= 200 && llmsRes.status < 300,
+    text: llmsRes.text || ''
+  };
 
   const pages = [];
   const seen = new Set();
@@ -271,6 +279,7 @@ async function crawlSite(startUrl, opts = {}) {
     robots,
     favicon,
     canary,
+    llms,
     sitemap: sitemapProbe,
     pages,
     blockedPaths,

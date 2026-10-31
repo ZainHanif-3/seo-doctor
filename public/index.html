@@ -35,7 +35,7 @@
       <div class="hero-copy">
         <p class="eyebrow">ZN DEVELOPER · TECHNICAL SEO LAB</p>
         <h1>Crawl. Score.<br><span class="grad">Repair.</span></h1>
-        <p class="lede">Paste any URL. SEO Doctor crawls the site (depth ≤ 3, 30 pages, 10&nbsp;s budget), audits 45+ ranking signals, prints a scored issue table — then rewrites every fixable file for you.</p>
+        <p class="lede">Paste any URL. SEO Doctor crawls the site (depth ≤ 3, 30 pages, 10&nbsp;s budget), scores it for <b>SEO</b> and <b>GEO</b> (AI-answer visibility), prints a scored issue table — then repairs every fixable file and <b>re-audits itself</b> until the score stops climbing.</p>
 
         <form id="scan-form" class="scan-form" novalidate>
           <div class="field-row">
@@ -111,16 +111,37 @@
       </div>
 
       <div class="score-row">
-        <div class="gauge-wrap">
-          <svg class="gauge" viewBox="0 0 200 200" role="img" aria-labelledby="gauge-label">
-            <title id="gauge-label">SEO score</title>
-            <circle class="gauge-ring" cx="100" cy="100" r="84"></circle>
-            <circle class="gauge-arc" id="gauge-arc" cx="100" cy="100" r="84"></circle>
-          </svg>
-          <div class="gauge-value"><span id="score-num">0</span><small>/100</small></div>
+        <div class="gauges">
+          <div class="gauge-block">
+            <div class="gauge-wrap">
+              <svg class="gauge" viewBox="0 0 200 200" role="img" aria-labelledby="gauge-label">
+                <title id="gauge-label">SEO score</title>
+                <circle class="gauge-ring" cx="100" cy="100" r="84"></circle>
+                <circle class="gauge-arc" id="gauge-arc" cx="100" cy="100" r="84"></circle>
+              </svg>
+              <div class="gauge-value"><span id="score-num">0</span><small>/100</small></div>
+            </div>
+            <p class="gauge-label">SEO</p>
+          </div>
+
+          <div class="gauge-block">
+            <div class="gauge-wrap">
+              <svg class="gauge" viewBox="0 0 200 200" role="img" aria-labelledby="gauge-label-geo">
+                <title id="gauge-label-geo">GEO score</title>
+                <circle class="gauge-ring" cx="100" cy="100" r="84"></circle>
+                <circle class="gauge-arc" id="gauge-arc-geo" cx="100" cy="100" r="84"></circle>
+              </svg>
+              <div class="gauge-value"><span id="geo-score-num">0</span><small>/100</small></div>
+            </div>
+            <p class="gauge-label">GEO <em>AI answers</em></p>
+          </div>
         </div>
 
         <div class="score-side">
+          <div class="overall-pill">
+            <span>Overall</span> <b id="overall-score">0</b><small>/100</small>
+            <span class="target-badge" id="target-badge" hidden></span>
+          </div>
           <div class="chips" id="severity-chips">
             <span class="chip chip-critical">critical <b id="c-critical">0</b></span>
             <span class="chip chip-high">high <b id="c-high">0</b></span>
@@ -128,6 +149,7 @@
             <span class="chip chip-low">low <b id="c-low">0</b></span>
           </div>
           <ul class="score-facts" id="score-facts"></ul>
+          <p class="projection" id="projection"></p>
         </div>
       </div>
     </section>
@@ -191,7 +213,10 @@
         <button class="btn btn-go" id="optimize-btn" type="button">
           ⚡ Optimize all <span id="optimize-count"></span>
         </button>
-        <p class="hint">Repairs selected issues (or every repairable issue if none are selected) and returns fixed/skipped results with a full before/after diff.</p>
+        <button class="btn btn-improve" id="improve-btn" type="button">
+          🚀 Improve until ≥90 <span class="btn-sub">auto-loop</span>
+        </button>
+        <p class="hint">Optimize runs one repair pass. <b>Improve</b> repairs, re-crawls the result, scores it again and repeats — up to 6 passes — until the overall score reaches the target or nothing fixable is left.</p>
       </div>
     </section>
 
@@ -206,6 +231,13 @@
 
       <div class="result-stats" id="result-stats"></div>
       <p class="alert alert-warn" id="optimize-error" role="alert" hidden></p>
+
+      <div class="score-delta" id="score-delta" hidden></div>
+
+      <details class="iteration-box" id="iteration-box" hidden open>
+        <summary>Improvement passes <span id="iteration-count"></span></summary>
+        <div class="iteration-table" id="iterations"></div>
+      </details>
 
       <div class="diffs" id="diffs"></div>
 

@@ -5,7 +5,8 @@ const content = require('./content');
 const social = require('./social');
 const structured = require('./structured');
 const technical = require('./technical');
-const { scoreIssues, SEVERITIES } = require('../scoring');
+const geo = require('./geo');
+const { scoreIssues, scoreReport, projectScore, SEVERITIES } = require('../scoring');
 
 const SEV_ORDER = { critical: 0, high: 1, medium: 2, low: 3 };
 
@@ -57,21 +58,62 @@ function runAudit(crawl, opts = {}) {
         fixable: !!spec.fixable,
         autoFixable: !!spec.autoFixable,
         advice: spec.advice || '',
-        ...(spec.meta ? { meta: spec.meta } : {})
+        ...(spec.meta ? { meta: spec.meta } : {}),
+        ...(spec.geoWeight != null ? { geoWeight: spec.geoWeight } : {}),
+        ...(spec.deniedFromScore ? { deniedFromScore: true } : {})
       };
     }
   };
 
   let issues = [];
-  issues = issues.concat(meta.run(ctx), content.run(ctx), social.run(ctx), structured.run(ctx), technical.run(ctx));
+  issues = issues.concat(
+    meta.run(ctx),
+    content.run(ctx),
+    social.run(ctx),
+    structured.run(ctx),
+    technical.run(ctx),
+    geo.run(ctx)
+  );
 
   issues.sort((a, b) =>
     (SEV_ORDER[a.severity] - SEV_ORDER[b.severity]) ||
     a.category.localeCompare(b.category) ||
     a.page.localeCompare(b.page));
 
-  const { score, counts, weighted, maxPossible } = scoreIssues(issues);
-  return { issues, score, counts, weighted, maxPossible, contentPages: pages.length };
+  const geoPossible = geo.possibleFor(pages.length);
+  const scores = scoreReport(issues, { pages: pages.length, geoPossible });
+  const projection = projectScore(issues, { pages: pages.length, geoPossible });
+  const v1 = scoreIssues(issues);
+
+  return {
+    issues,
+    // v1 fields (backwards compatible)
+    score: scores.seo,
+    counts: v1.counts,
+    weighted: v1.weighted,
+    maxPossible: v1.maxPossible,
+    // new
+    seoScore: scores.seo,
+    geoScore: scores.geo,
+    overall: scores.overall,
+    scores: {
+      seo: scores.seo,
+      geo: scores.geo,
+      overall: scores.overall,
+      counts: v1.counts,
+      seoWeighted: scores.seoWeighted,
+      geoPossible
+    },
+    projection: {
+      seo: projection.seo,
+      geo: projection.geo,
+      overall: projection.overall,
+      blockers: projection.blockers.map(b => ({
+        id: b.id, rule: b.rule, severity: b.severity, category: b.category, title: b.title, page: b.page
+      }))
+    },
+    contentPages: pages.length
+  };
 }
 
 module.exports = { runAudit, dedupeContentPages };

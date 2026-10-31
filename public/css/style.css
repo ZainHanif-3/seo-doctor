@@ -852,3 +852,115 @@ input:focus {
   .scanline, .float-tag, .wire-chip, .btn-dot { animation: none; }
   html { scroll-behavior: auto; }
 }
+
+/* ---------- SEO + GEO dual score (v1.1) ---------- */
+.gauges { display: flex; gap: 26px; flex-wrap: wrap; align-items: flex-start; }
+
+.gauge-block { display: flex; flex-direction: column; align-items: center; gap: 8px; }
+
+.gauge-label {
+  margin: 0;
+  font-size: 12px;
+  letter-spacing: .18em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.gauge-label em { display: block; font-style: normal; font-size: 10px; letter-spacing: .08em; opacity: .65; text-align: center; }
+
+.overall-pill {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 8px;
+  border: 1px solid var(--line-2);
+  background: rgba(163, 230, 53, .06);
+  border-radius: 999px;
+  padding: 8px 16px;
+  font-size: 12.5px;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 16px;
+}
+.overall-pill b { font-family: var(--display); font-size: 22px; color: var(--lime); letter-spacing: 0; }
+.overall-pill small { color: var(--muted); }
+
+.target-badge {
+  font-size: 11px;
+  letter-spacing: .06em;
+  text-transform: none;
+  border-radius: 999px;
+  padding: 3px 10px;
+  border: 1px solid;
+}
+.target-badge.ok { color: var(--lime); border-color: rgba(163, 230, 53, .5); background: rgba(163, 230, 53, .1); }
+.target-badge.near { color: var(--cyan); border-color: rgba(34, 211, 238, .5); background: rgba(34, 211, 238, .1); }
+.target-badge.blocked { color: var(--amber); border-color: rgba(245, 158, 11, .5); background: rgba(245, 158, 11, .1); }
+
+.projection { margin: 16px 0 0; font-size: 12.5px; color: var(--muted); line-height: 1.6; }
+.projection b { color: var(--text); }
+
+/* ---------- improve button ---------- */
+.btn-improve {
+  background: linear-gradient(135deg, rgba(34, 211, 238, .16), rgba(163, 230, 53, .16));
+  border-color: rgba(34, 211, 238, .5);
+  color: var(--text);
+}
+.btn-improve:hover { box-shadow: 0 12px 42px rgba(34, 211, 238, .3); color: #fff; }
+.btn-improve[disabled] { opacity: .55; cursor: wait; }
+.btn-improve .btn-sub { font-size: 10px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); margin-left: 4px; }
+
+/* ---------- score delta ---------- */
+.score-delta { display: flex; gap: 14px; flex-wrap: wrap; align-items: stretch; margin: 0 0 20px; }
+
+.delta-cell {
+  border: 1px solid var(--line-2);
+  border-radius: 12px;
+  padding: 12px 18px;
+  background: #0b0d14;
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+}
+.delta-cell.overall { border-color: rgba(163, 230, 53, .4); background: rgba(163, 230, 53, .05); }
+.delta-name { font-size: 11px; letter-spacing: .16em; text-transform: uppercase; color: var(--muted); }
+.delta-val { font-family: var(--display); font-size: 20px; color: var(--muted); }
+.delta-val b { color: var(--text); font-size: 24px; }
+.delta-cell.overall .delta-val b { color: var(--lime); }
+.delta-diff { font-family: var(--display); font-size: 15px; }
+.delta-diff.up { color: var(--lime); }
+.delta-diff.down { color: #F43F5E; }
+.delta-diff.flat { color: var(--muted); }
+
+.target-hit {
+  align-self: center;
+  font-size: 11.5px;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--lime);
+  border: 1px solid rgba(163, 230, 53, .5);
+  background: rgba(163, 230, 53, .1);
+  border-radius: 999px;
+  padding: 6px 14px;
+}
+
+/* ---------- iteration table ---------- */
+.iteration-box {
+  border: 1px solid var(--line-2);
+  border-radius: 12px;
+  padding: 14px 18px;
+  margin-bottom: 22px;
+  background: #0b0d14;
+}
+.iteration-box summary { cursor: pointer; color: var(--muted); font-size: 13.5px; }
+.iteration-box summary span { color: var(--cyan); }
+
+.iter-table { margin-top: 14px; }
+.iter-row { display: grid; grid-template-columns: 70px repeat(5, 1fr); gap: 8px; padding: 7px 0; border-bottom: 1px solid rgba(255, 255, 255, .04); font-size: 13px; }
+.iter-row:last-child { border-bottom: 0; }
+.iter-head { color: var(--muted); font-size: 11px; letter-spacing: .12em; text-transform: uppercase; border-bottom: 1px solid var(--line-2); }
+.iter-overall { color: var(--lime); font-weight: 700; }
+
+@media (max-width: 720px) {
+  .gauges { gap: 14px; }
+  .iter-row { grid-template-columns: 54px repeat(5, 1fr); font-size: 11.5px; }
+}

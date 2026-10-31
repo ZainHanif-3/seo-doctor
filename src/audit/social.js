@@ -1,7 +1,7 @@
 'use strict';
 
-const OG_REQUIRED = ['og:title', 'og:description', 'og:image', 'og:url', 'og:type'];
-const TW_REQUIRED = ['twitter:card', 'twitter:title', 'twitter:description'];
+const OG_REQUIRED = ['title', 'description', 'image', 'url', 'type'];
+const TW_REQUIRED = ['card', 'title', 'description'];
 
 function run(ctx) {
   const issues = [];
@@ -17,7 +17,7 @@ function run(ctx) {
         rule: 'og', severity: 'medium', category: 'social', page: url, pages: [url],
         title: 'Missing Open Graph tags',
         message: 'Shared links will render without a rich preview on Facebook, LinkedIn, WhatsApp, etc.',
-        evidence: `missing: ${ogMissing.join(', ')}${Object.keys(pr.og).length ? '' : ' (no og:* tags at all)'}`,
+        evidence: `missing: ${ogMissing.map(k => 'og:' + k).join(', ')}${Object.keys(pr.og).length ? '' : ' (no og:* tags at all)'}`,
         fixable: true, autoFixable: true,
         advice: 'Add the full og:title / og:description / og:image / og:url / og:type set.'
       }));
@@ -29,7 +29,7 @@ function run(ctx) {
         rule: 'og', severity: 'low', category: 'social', page: url, pages: [url],
         title: 'Missing Twitter card tags',
         message: 'X/Twitter shares fall back to a plain link instead of a summary card.',
-        evidence: `missing: ${twMissing.join(', ')}`,
+        evidence: `missing: ${twMissing.map(k => 'twitter:' + k).join(', ')}`,
         fixable: true, autoFixable: true,
         advice: 'Add twitter:card, twitter:title and twitter:description meta tags.'
       }));

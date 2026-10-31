@@ -1,7 +1,7 @@
 {
   "name": "seo-doctor",
-  "version": "1.0.0",
-  "description": "SEO Doctor - site crawl, scored SEO audit and one-click auto-repair (mirror + live modes). Built by ZN DEVELOPER.",
+  "version": "1.1.0",
+  "description": "SEO Doctor - site crawl, dual SEO + GEO scoring, and an audit-repair-reaudit loop that improves the score until the target is reached. Built by ZN DEVELOPER.",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",

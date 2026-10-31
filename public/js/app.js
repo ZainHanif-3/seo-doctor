@@ -27,17 +27,27 @@ const el = {
   repair: $('#repair'),
   results: $('#results'),
   gaugeArc: $('#gauge-arc'),
+  gaugeArcGeo: $('#gauge-arc-geo'),
   scoreNum: $('#score-num'),
+  geoScoreNum: $('#geo-score-num'),
+  overallScore: $('#overall-score'),
+  targetBadge: $('#target-badge'),
+  projection: $('#projection'),
   reportMeta: $('#report-meta'),
   scoreFacts: $('#score-facts'),
   groups: $('#issue-groups'),
   selectAll: $('#select-all'),
   optimizeBtn: $('#optimize-btn'),
+  improveBtn: $('#improve-btn'),
   optimizeCount: $('#optimize-count'),
   livePanel: $('#live-panel'),
   mirrorCard: $('#mode-mirror-card'),
   liveCard: $('#mode-live-card'),
   resultStats: $('#result-stats'),
+  scoreDelta: $('#score-delta'),
+  iterationBox: $('#iteration-box'),
+  iterationCount: $('#iteration-count'),
+  iterations: $('#iterations'),
   optimizeError: $('#optimize-error'),
   diffs: $('#diffs'),
   manualBox: $('#manual-box'),
@@ -92,13 +102,21 @@ function animateNumber(node, to, ms = 900) {
   requestAnimationFrame(step);
 }
 
-function setGauge(score) {
-  if (!el.gaugeArc) return;
-  const clamped = Math.max(0, Math.min(100, score));
-  el.gaugeArc.style.strokeDasharray = String(GAUGE_C);
-  el.gaugeArc.style.strokeDashoffset = String(GAUGE_C * (1 - clamped / 100));
-  el.gaugeArc.style.stroke = clamped >= 80 ? '#A3E635' : clamped >= 50 ? '#22D3EE' : clamped >= 30 ? '#F59E0B' : '#F43F5E';
-  el.gaugeArc.style.filter = `drop-shadow(0 0 8px ${clamped >= 80 ? 'rgba(163,230,53,.6)' : clamped >= 50 ? 'rgba(34,211,238,.6)' : 'rgba(245,158,11,.6)'})`;
+function gaugeColor(score) {
+  return score >= 80 ? '#A3E635' : score >= 50 ? '#22D3EE' : score >= 30 ? '#F59E0B' : '#F43F5E';
+}
+
+function gaugeGlow(score) {
+  return score >= 80 ? 'rgba(163,230,53,.6)' : score >= 50 ? 'rgba(34,211,238,.6)' : 'rgba(245,158,11,.6)';
+}
+
+function setGauge(node, score) {
+  if (!node) return;
+  const clamped = Math.max(0, Math.min(100, Number(score) || 0));
+  node.style.strokeDasharray = String(GAUGE_C);
+  node.style.strokeDashoffset = String(GAUGE_C * (1 - clamped / 100));
+  node.style.stroke = gaugeColor(clamped);
+  node.style.filter = `drop-shadow(0 0 8px ${gaugeGlow(clamped)})`;
 }
 
 /* ------------------------------------------------------------- progress */
@@ -183,14 +201,60 @@ async function analyze(url) {
   }
 }
 
+function renderTargetBadge(overall, projection) {
+  if (!el.targetBadge) return;
+  const projected = projection && typeof projection.overall === 'number' ? projection.overall : null;
+  el.targetBadge.hidden = false;
+  if (overall >= 90) {
+    el.targetBadge.textContent = 'target met ≥90';
+    el.targetBadge.className = 'target-badge ok';
+  } else if (projected != null && projected >= 90) {
+    el.targetBadge.textContent = `projected ${projected} after repair`;
+    el.targetBadge.className = 'target-badge near';
+  } else if (projected != null) {
+    el.targetBadge.textContent = `ceiling ~${projected} · manual fixes needed`;
+    el.targetBadge.className = 'target-badge blocked';
+  } else {
+    el.targetBadge.hidden = true;
+  }
+}
+
+function renderProjection(data) {
+  if (!el.projection) return;
+  const p = data.projection;
+  if (!p || typeof p.overall !== 'number') {
+    el.projection.textContent = '';
+    return;
+  }
+  const blockers = (p.blockers || []).length;
+  el.projection.innerHTML = '';
+  const strong = document.createElement('b');
+  strong.textContent = `Projected after auto-repair: ${p.overall}/100`;
+  el.projection.appendChild(strong);
+  el.projection.appendChild(document.createTextNode(
+    ` (SEO ${p.seo} · GEO ${p.geo})` + (blockers ? ` · ${blockers} item(s) still need a human.` : ' · nothing manual blocking.')
+  ));
+}
+
 function renderReport(data) {
   el.report.hidden = false;
   el.issuesPanel.hidden = false;
   el.repair.hidden = false;
   el.results.hidden = true;
+  el.scoreDelta.hidden = true;
+  el.iterationBox.hidden = true;
 
-  setGauge(data.score);
-  animateNumber(el.scoreNum, data.score);
+  const seo = data.seoScore != null ? data.seoScore : data.score;
+  const geo = data.geoScore != null ? data.geoScore : 0;
+  const overall = data.overall != null ? data.overall : seo;
+
+  setGauge(el.gaugeArc, seo);
+  setGauge(el.gaugeArcGeo, geo);
+  animateNumber(el.scoreNum, seo);
+  animateNumber(el.geoScoreNum, geo);
+  animateNumber(el.overallScore, overall);
+  renderTargetBadge(overall, data.projection);
+  renderProjection(data);
 
   $('#c-critical').textContent = data.counts.critical;
   $('#c-high').textContent = data.counts.high;
@@ -203,6 +267,8 @@ function renderReport(data) {
   const facts = [
     ['URL', shortUrl(data.url, 40)],
     ['Pages crawled', String(data.pages)],
+    ['SEO score', String(seo)],
+    ['GEO score', String(geo)],
     ['Issues found', String(data.issues.length)],
     ['Auto-repairable', String(fixable)],
     ['Crawl time', (data.durationMs / 1000).toFixed(1) + ' s'],
@@ -381,7 +447,7 @@ function collectCreds() {
   };
 }
 
-async function runOptimize(ids, sourceBtn) {
+async function runOptimize(ids, sourceBtn, opts = {}) {
   if (state.optimizing || !state.report) return;
   const mode = currentMode();
 
@@ -395,15 +461,17 @@ async function runOptimize(ids, sourceBtn) {
   const btn = sourceBtn || el.optimizeBtn;
   const prevText = btn.textContent;
   btn.disabled = true;
-  btn.textContent = 'Optimizing…';
+  btn.textContent = opts.endpoint === '/api/improve' ? 'Improving…' : 'Optimizing…';
   el.optimizeBtn.disabled = true;
+  el.improveBtn.disabled = true;
 
   try {
     const payload = {
       reportId: state.report.id,
       mode,
       siteName: el.siteName.value.trim() || undefined,
-      lang: el.lang.value.trim() || undefined
+      lang: el.lang.value.trim() || undefined,
+      ...(opts.extra || {})
     };
     if (ids && ids.length) payload.selected = ids;
     if (mode === 'live') {
@@ -412,7 +480,8 @@ async function runOptimize(ids, sourceBtn) {
       payload.creds = collectCreds();
     }
 
-    const res = await fetch(mode === 'live' ? '/api/optimize/live' : '/api/optimize', {
+    const endpoint = opts.endpoint || (mode === 'live' ? '/api/optimize/live' : '/api/optimize');
+    const res = await fetch(endpoint, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload)
@@ -438,13 +507,136 @@ async function runOptimize(ids, sourceBtn) {
     btn.disabled = false;
     btn.textContent = prevText;
     el.optimizeBtn.disabled = false;
+    el.improveBtn.disabled = false;
     updateOptimizeCount();
   }
+}
+
+function runImprove() {
+  return runOptimize(null, el.improveBtn, {
+    endpoint: '/api/improve',
+    extra: { maxIterations: 6, target: 90 }
+  });
 }
 
 function cssEscape(s) {
   if (window.CSS && CSS.escape) return CSS.escape(s);
   return String(s).replace(/["\\]/g, '\\$&');
+}
+
+function renderScoreDelta(data) {
+  const before = data.scores && data.scores.before;
+  const after = data.scores && data.scores.after;
+  if (!before || !after || typeof after.overall !== 'number') {
+    el.scoreDelta.hidden = true;
+    return;
+  }
+  el.scoreDelta.hidden = false;
+  el.scoreDelta.innerHTML = '';
+
+  const rows = [
+    ['SEO', before.seo, after.seo],
+    ['GEO', before.geo, after.geo],
+    ['Overall', before.overall, after.overall]
+  ];
+
+  for (const [label, b, a] of rows) {
+    const cell = document.createElement('div');
+    cell.className = 'delta-cell' + (label === 'Overall' ? ' overall' : '');
+
+    const name = document.createElement('span');
+    name.className = 'delta-name';
+    name.textContent = label;
+
+    const val = document.createElement('span');
+    val.className = 'delta-val';
+    val.textContent = `${b == null ? '—' : b} → `;
+
+    const strong = document.createElement('b');
+    strong.textContent = a == null ? '—' : String(a);
+
+    const diff = document.createElement('span');
+    const d = (typeof a === 'number' && typeof b === 'number') ? a - b : null;
+    diff.className = 'delta-diff ' + (d > 0 ? 'up' : d < 0 ? 'down' : 'flat');
+    diff.textContent = d == null ? '' : (d > 0 ? `+${d}` : String(d));
+
+    val.appendChild(strong);
+    cell.appendChild(name);
+    cell.appendChild(val);
+    cell.appendChild(diff);
+    el.scoreDelta.appendChild(cell);
+  }
+
+  if (data.reachedTarget) {
+    const ok = document.createElement('span');
+    ok.className = 'target-hit';
+    ok.textContent = `target ${data.target} reached`;
+    el.scoreDelta.appendChild(ok);
+  }
+
+  // Keep the header gauges in sync with the repaired score.
+  if (state.report) {
+    state.report.seoScore = after.seo;
+    state.report.geoScore = after.geo;
+    state.report.overall = after.overall;
+    setGauge(el.gaugeArc, after.seo);
+    setGauge(el.gaugeArcGeo, after.geo);
+    animateNumber(el.scoreNum, after.seo);
+    animateNumber(el.geoScoreNum, after.geo);
+    animateNumber(el.overallScore, after.overall);
+    renderTargetBadge(after.overall, null);
+  }
+}
+
+function renderIterations(data) {
+  const list = data.iterations || [];
+  if (list.length < 2) {
+    el.iterationBox.hidden = true;
+    return;
+  }
+  el.iterationBox.hidden = false;
+  el.iterationCount.textContent = `(${list.length} passes)`;
+  el.iterations.innerHTML = '';
+
+  const table = document.createElement('div');
+  table.className = 'iter-table';
+  const head = document.createElement('div');
+  head.className = 'iter-row iter-head';
+  ['Pass', 'SEO', 'GEO', 'Overall', 'Issues left', 'Changed'].forEach(h => {
+    const c = document.createElement('span');
+    c.textContent = h;
+    head.appendChild(c);
+  });
+  table.appendChild(head);
+
+  for (const it of list) {
+    const row = document.createElement('div');
+    row.className = 'iter-row';
+    const cells = [
+      `#${it.iteration}`,
+      String(it.seo),
+      String(it.geo),
+      String(it.overall),
+      String(it.issues),
+      it.iteration === 1 ? '—' : `${it.changedPages || 0} page(s)`
+    ];
+    cells.forEach((text, i) => {
+      const c = document.createElement('span');
+      c.textContent = text;
+      if (i === 3) c.className = 'iter-overall';
+      row.appendChild(c);
+    });
+    table.appendChild(row);
+  }
+
+  el.iterations.appendChild(table);
+
+  const note = document.createElement('p');
+  note.className = 'hint';
+  note.textContent = data.remainingAutoFixable
+    ? `${data.remainingAutoFixable} auto-repairable issue(s) remain — re-run Improve to try another pass.`
+    : 'No auto-repairable issues remain. Anything left is listed under manual recommendations.';
+  el.iterations.appendChild(note);
 }
 
 function renderResults(data, requestedIds) {
@@ -490,6 +682,9 @@ function renderResults(data, requestedIds) {
   } else {
     el.downloadBtn.hidden = true;
   }
+
+  renderScoreDelta(data);
+  renderIterations(data);
 
   // diffs
   el.diffs.innerHTML = '';
@@ -538,7 +733,7 @@ function renderResults(data, requestedIds) {
 
   // manual recommendations
   const manual = (data.skipped || []).filter(s => /manual|advice|review/.test(s.note || ''));
-  el.manualCount.textContent = `(${(data.skipped || []).length} entries)`;
+  el.manualCount.textContent = `(${(data.skipped || []).filter(s => !/already correct/.test(s.note || '')).length} entries)`;
   el.manualList.innerHTML = '';
   if (manual.length) {
     el.manualBox.hidden = false;
@@ -577,6 +772,7 @@ function init() {
   });
 
   el.optimizeBtn.addEventListener('click', () => runOptimize(null, el.optimizeBtn));
+  el.improveBtn.addEventListener('click', runImprove);
 
   el.selectAll.addEventListener('change', () => {
     $$('#issue-groups .fix-check input:not(:disabled)').forEach(c => {

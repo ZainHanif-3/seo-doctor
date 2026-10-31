@@ -117,6 +117,25 @@ function parsePage(html, pageUrl) {
 
   out.xuaCompatible = /http-equiv\s*=\s*["']X-UA-Compatible["']/i.test(html);
 
+  // ---- semantic landmarks (GEO) ----
+  out.landmarks = {
+    main: $('main, [role="main"]').length > 0,
+    article: $('article').length > 0,
+    nav: $('nav, [role="navigation"]').length > 0,
+    header: $('header, [role="banner"]').length > 0,
+    footer: $('footer, [role="contentinfo"]').length > 0,
+    aside: $('aside, [role="complementary"]').length > 0
+  };
+
+  // ---- extractable structure (GEO) ----
+  out.listCount = $('ul, ol').length;
+  out.tableCount = $('table').length;
+
+  // ---- authorship ----
+  out.hasByline = $('[rel="author"], [itemprop="author"], .author, .byline, address').length > 0
+    || /<meta[^>]+name=["']author["']/i.test(html)
+    || /"author"\s*:/.test(html);
+
   const bodyHtml = html.replace(/<head[\s\S]*?<\/head>/i, '');
   out.bodyText = stripTags(bodyHtml);
   out.wordCount = wordCount(out.bodyText);

@@ -29,7 +29,7 @@ function run(ctx) {
         title: 'Invalid JSON-LD structured data',
         message: 'A JSON-LD block on this page does not parse or is missing @context, so rich results are rejected.',
         evidence: bad.map(r => r.error ? `JSON.parse error: ${r.error}` : 'missing "@context"').join('; '),
-        fixable: false,
+        fixable: true, autoFixable: true,
         advice: 'Fix the JSON syntax (quotes, commas, closing braces) and include "@context": "https://schema.org".'
       }));
     }

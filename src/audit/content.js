@@ -56,7 +56,7 @@ function run(ctx) {
         title: 'Skipped heading levels',
         message: 'Heading levels jump (e.g. h1 → h3), which breaks document outline semantics.',
         evidence: skips.join(', '),
-        fixable: false,
+        fixable: true, autoFixable: true,
         advice: 'Use headings in strict order: h1 → h2 → h3, without skipping levels.'
       }));
     }

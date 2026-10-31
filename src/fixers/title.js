@@ -3,6 +3,29 @@
 const { truncateTitle } = require('../util');
 const { injectBeforeCloseHead, esc, record } = require('./helpers');
 
+const TITLE_MIN = 30;
+
+/**
+ * Short titles are the one case `truncateTitle` cannot help with. Build a
+ * longer variant from the site name and the page path, staying under 60.
+ */
+function padTitle(title, ctx) {
+  if (title.length >= TITLE_MIN) return title;
+  const siteName = ctx.siteName || '';
+  const suffix = ctx.pathSuffix || '';
+  const candidates = [
+    siteName && `${title} – ${siteName}`,
+    suffix && `${title} | ${suffix}`,
+    suffix && siteName && `${title} | ${suffix} – ${siteName}`
+  ].filter(Boolean);
+
+  const fits = candidates.filter(t => t.length >= TITLE_MIN && t.length <= 60);
+  if (fits.length) return fits[0];
+
+  const under = candidates.filter(t => t.length <= 60).sort((a, b) => b.length - a.length);
+  return under[0] || truncateTitle(title, 60);
+}
+
 function buildTitle(ctx) {
   const siteName = ctx.siteName || 'Website';
   let base = (ctx.h1 || '').trim() || (ctx.firstHeading || '').trim() || (ctx.existingTitle || '').trim();
@@ -25,6 +48,8 @@ function buildTitle(ctx) {
       }
     }
   }
+  if (title.length > 60) title = truncateTitle(title, 60);
+  if (title.length < TITLE_MIN) title = padTitle(title, ctx);
   if (title.length > 60) title = truncateTitle(title, 60);
   if (!title) title = truncateTitle(siteName, 60);
   return title;

@@ -236,7 +236,7 @@ function run(ctx) {
         title: 'Unminified inline styles',
         message: `${unminified.length} inline <style> block(s) contain whitespace/newlines — wasted bytes on every render.`,
         evidence: unminified.map(s => s.replace(/\s+/g, ' ').slice(0, 90)).join(' | '),
-        fixable: false,
+        fixable: true, autoFixable: true,
         advice: 'Move the CSS to an external file or minify it (one line, no comments).'
       }));
     }
@@ -267,7 +267,7 @@ function run(ctx) {
       title: 'Missing theme-color meta tag',
       message: 'No <meta name="theme-color"> — mobile browsers cannot tint the UI chrome with the brand colour.',
       evidence: 'no <meta name="theme-color"> on any crawled page',
-      fixable: false,
+      fixable: true, autoFixable: true,
       advice: 'Add <meta name="theme-color" content="#06070B"> (your brand hex) to the head.'
     }));
   }

@@ -15,6 +15,11 @@ const favicon = require('./favicon');
 const jsonld = require('./jsonld');
 const lazy = require('./lazy');
 const robotsSitemap = require('./robots-sitemap');
+const geo = require('./geo');
+const jsonldClean = require('./jsonld-clean');
+const themeColor = require('./theme-color');
+const headingOrder = require('./heading-order');
+const inlineCss = require('./inline-css');
 
 const FIXERS = {
   title: title.fix,
@@ -29,8 +34,17 @@ const FIXERS = {
   'img-dimensions': imgDimensions.fix,
   og: og.fix,
   favicon: favicon.fix,
-  jsonld: jsonld.fix,
-  lazy: lazy.fix
+  'jsonld': jsonld.fix,
+  'jsonld-invalid': jsonldClean.fix,
+  'theme-color': themeColor.fix,
+  'heading-skip': headingOrder.fix,
+  'inline-css': inlineCss.fix,
+  lazy: lazy.fix,
+  // GEO — all four page rules converge on one idempotent @graph injection
+  'geo-schema-graph': geo.fix,
+  'geo-author': geo.fix,
+  'geo-freshness': geo.fix,
+  'geo-faq': geo.fix
 };
 
 const RULES = Object.keys(FIXERS);
@@ -60,5 +74,8 @@ module.exports = {
   sitemapEntriesFor: robotsSitemap.sitemapEntriesFor,
   generateFaviconSvg: favicon.generateFaviconSvg,
   buildTitle: title.buildTitle,
-  buildDescription: description.buildDescription
+  buildDescription: description.buildDescription,
+  generateLlmsTxt: geo.generateLlmsTxt,
+  augmentRobotsForAi: geo.augmentRobotsForAi,
+  geo: geo
 };
